@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #28a745; color: white; padding: 10px; text-align: center; }
+        .content { padding: 20px; border: 1px solid #ddd; }
+        .footer { text-align: center; margin-top: 20px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Leave Request Approved ✅</h2>
+        </div>
+        <div class="content">
+            <p>Dear {{ employee.user.get_full_name }},</p>
+
+            <p>Your leave request has been <strong>approved</strong>.</p>
+
+            <div style="background: #f8f9fa; padding: 15px; margin: 15px 0;">
+                <p><strong>Leave Details:</strong></p>
+                <p><strong>Type:</strong> {{ leave.get_leave_type_display }}</p>
+                <p><strong>Dates:</strong> {{ leave.start_date }} to {{ leave.end_date }}</p>
+                <p><strong>Duration:</strong> {{ leave.duration }} day(s)</p>
+                <p><strong>Status:</strong> <span style="color: #28a745;">Approved</span></p>
+            </div>
+
+            <p>Please ensure you have completed all pending work before your leave.</p>
+        </div>
+        <div class="footer">
+            <p>Face Attendance System<br>HR Department</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,269 @@
+{% extends 'base.html' %}
+
+{% block title %}Manual Attendance - Face Attendance System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2><i class="fas fa-user-plus me-2"></i>Manual Attendance Entry</h2>
+            <div>
+                <a href="{% url 'mark_attendance' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-fingerprint me-2"></i>Face Recognition
+                </a>
+                <a href="{% url 'attendance_records' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-history me-2"></i>View Records
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mx-auto">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Add Attendance Record</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Use this form to manually add attendance records for employees who couldn't mark attendance through face recognition.
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="employee_id" class="form-label">
+                            <i class="fas fa-user me-2"></i>Select Employee
+                        </label>
+                        <select class="form-select form-select-lg"
+                                id="employee_id"
+                                name="employee_id"
+                                required>
+                            <option value="">Choose an employee...</option>
+                            {% for employee in employees %}
+                                <option value="{{ employee.employee_id }}">
+                                    {{ employee.employee_id }} - {{ employee.user.get_full_name }}
+                                    {% if employee.department %}
+                                        ({{ employee.department.name }})
+                                    {% endif %}
+                                </option>
+                            {% empty %}
+                                <option value="">No employees available</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="date" class="form-label">
+                            <i class="fas fa-calendar me-2"></i>Date
+                        </label>
+                        <input type="date"
+                               class="form-control form-control-lg"
+                               id="date"
+                               name="date"
+                               max="{{ today|date:'Y-m-d' }}"
+                               value="{{ today|date:'Y-m-d' }}"
+                               required>
+                        <div class="form-text">Cannot set future dates</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="time_in" class="form-label">
+                            <i class="fas fa-clock me-2"></i>Time In (Optional)
+                        </label>
+                        <input type="time"
+                               class="form-control form-control-lg"
+                               id="time_in"
+                               name="time_in">
+                        <div class="form-text">Leave blank to use current time</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="time_out" class="form-label">
+                            <i class="fas fa-clock me-2"></i>Time Out (Optional)
+                        </label>
+                        <input type="time"
+                               class="form-control form-control-lg"
+                               id="time_out"
+                               name="time_out">
+                        <div class="form-text">Leave blank if not checked out</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="status" class="form-label">
+                            <i class="fas fa-info-circle me-2"></i>Attendance Status
+                        </label>
+                        <select class="form-select form-select-lg"
+                                id="status"
+                                name="status"
+                                required>
+                            {% for status_code, status_name in status_choices %}
+                                <option value="{{ status_code }}"
+                                        {% if status_code == 'present' %}selected{% endif %}>
+                                    {{ status_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">
+                            <i class="fas fa-sticky-note me-2"></i>Notes (Optional)
+                        </label>
+                        <textarea class="form-control"
+                                  id="notes"
+                                  name="notes"
+                                  rows="3"
+                                  placeholder="Add any additional notes..."></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-save me-2"></i>Save Attendance Record
+                        </button>
+                        <button type="reset" class="btn btn-outline-secondary">
+                            <i class="fas fa-redo me-2"></i>Reset Form
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Today's Statistics</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <h4 class="text-primary mb-0">{{ total_employees }}</h4>
+                        <small class="text-muted">Total Employees</small>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="text-success mb-0">{{ present_today }}</h4>
+                        <small class="text-muted">Present Today</small>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="text-danger mb-0">{{ absent_count }}</h4>
+                        <small class="text-muted">Absent/Other</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Today's Attendance</h5>
+            </div>
+            <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                {% if today_attendance %}
+                    <div class="list-group">
+                        {% for record in today_attendance %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ record.employee.user.get_full_name }}</h6>
+                                    <p class="mb-1 text-muted small">
+                                        <i class="fas fa-id-badge me-1"></i>{{ record.employee.employee_id }}
+                                        {% if record.employee.department %}
+                                            | <i class="fas fa-building me-1"></i>{{ record.employee.department.name }}
+                                        {% endif %}
+                                    </p>
+                                    <p class="mb-0 small">
+                                        <i class="fas fa-clock me-1 text-success"></i>
+                                        In: {{ record.time_in|time:"H:i" }}
+                                        {% if record.time_out %}
+                                            | <i class="fas fa-clock me-1 text-danger"></i>
+                                            Out: {{ record.time_out|time:"H:i" }}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <div>
+                                    {% if record.status == 'present' %}
+                                        <span class="badge bg-success">Present</span>
+                                    {% elif record.status == 'absent' %}
+                                        <span class="badge bg-danger">Absent</span>
+                                    {% elif record.status == 'late' %}
+                                        <span class="badge bg-warning text-dark">Late</span>
+                                    {% elif record.status == 'half_day' %}
+                                        <span class="badge bg-info">Half Day</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p>No attendance marked today yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Instructions</h6>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li class="mb-2">Select the employee from the dropdown</li>
+                    <li class="mb-2">Choose the date (cannot be future date)</li>
+                    <li class="mb-2">Optionally set specific time in/out</li>
+                    <li class="mb-2">Select the appropriate attendance status</li>
+                    <li class="mb-2">Add notes if needed</li>
+                    <li>Click "Save Attendance Record"</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Prevent selecting future dates
+        const dateInput = document.getElementById('date');
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.max = today;
+
+        // Validate time_out is after time_in
+        const timeIn = document.getElementById('time_in');
+        const timeOut = document.getElementById('time_out');
+
+        timeOut.addEventListener('change', function() {
+            if (timeIn.value && timeOut.value) {
+                if (timeOut.value <= timeIn.value) {
+                    alert('Time Out must be after Time In!');
+                    timeOut.value = '';
+                }
+            }
+        });
+
+        // Auto-submit confirmation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const employee = document.getElementById('employee_id');
+            const selectedText = employee.options[employee.selectedIndex].text;
+
+            if (!confirm(`Mark attendance for ${selectedText}?`)) {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+
+<style>
+    .list-group-item {
+        transition: background-color 0.2s;
+    }
+
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}

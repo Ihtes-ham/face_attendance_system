@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}Mark Attendance - Face Attendance System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="text-center">⏰ Mark Attendance with Face Recognition</h4>
+            </div>
+            <div class="card-body">
+                {% if not face_recognition_available %}
+                <div class="alert alert-warning">
+                    <strong>⚠️ Simulation Mode:</strong>
+                    Real face recognition is not available. Install face_recognition library for real recognition.
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <strong>🔍 Real Face Recognition Active:</strong>
+                    <ul>
+                        <li>Make sure you have a webcam connected</li>
+                        <li>Look directly at the camera in good lighting</li>
+                        <li>System will automatically recognize registered faces</li>
+                        <li>Press 'Q' to cancel recognition</li>
+                    </ul>
+                </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            {% if face_recognition_available %}
+                            🎥 Start Real Face Recognition
+                            {% else %}
+                            🎥 Start Face Recognition (Simulation)
+                            {% endif %}
+                        </button>
+                    </div>
+                </form>
+
+                {% if messages %}
+                <div class="mt-3">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Today's Attendance -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>Today's Attendance</h5>
+            </div>
+            <div class="card-body">
+                {% if today_attendance %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Time In</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in today_attendance %}
+                                <tr>
+                                    <td>{{ record.employee.user.get_full_name }}</td>
+                                    <td>{{ record.time_in }}</td>
+                                    <td>
+                                        <span class="badge bg-success">{{ record.status }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No attendance marked today yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Quick Stats</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Total Employees:</strong>
+                    <span class="badge bg-primary">{{ employees_count }}</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Present Today:</strong>
+                    <span class="badge bg-success">{{ today_attendance|length }}</span>
+                </div>
+                <div class="mb-3">
+                    <strong>With Registered Faces:</strong>
+                    <span class="badge bg-info">{{ faces_count }}</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Recognition Mode:</strong>
+                    {% if face_recognition_available %}
+                    <span class="badge bg-success">Real</span>
+                    {% else %}
+                    <span class="badge bg-warning">Simulation</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>Instructions</h5>
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li>Register employee faces first</li>
+                    <li>Ensure good lighting conditions</li>
+                    <li>Look directly at the camera</li>
+                    <li>Remove glasses/obstructions if needed</li>
+                </ol>
+                <a href="{% url 'register_face' %}" class="btn btn-outline-primary btn-sm">Register Faces</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

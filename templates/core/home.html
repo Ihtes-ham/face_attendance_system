@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Face Attendance System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto text-center">
+        <h1 class="display-4 mb-4">👤 Smart Face Attendance System</h1>
+        <p class="lead">Automate your attendance tracking with AI-powered face recognition technology.</p>
+
+        <div class="row mt-5">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">🚀 Fast & Accurate</h5>
+                        <p class="card-text">AI-powered face recognition with 95%+ accuracy</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">⏰ Real-time Tracking</h5>
+                        <p class="card-text">Live attendance marking with webcam integration</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">📊 Smart Reports</h5>
+                        <p class="card-text">Generate detailed attendance reports and analytics</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg me-3">Go to Dashboard</a>
+                <a href="{% url 'admin:index' %}" class="btn btn-outline-primary btn-lg">Admin Panel</a>
+            {% else %}
+                <a href="{% url 'admin:index' %}" class="btn btn-primary btn-lg me-3">Admin Login</a>
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-primary btn-lg">View Dashboard</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Reject Leave - Face Attendance System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="text-center">❌ Reject Leave Request</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <strong>Leave Details:</strong><br>
+                    <strong>Employee:</strong> {{ leave.employee.user.get_full_name }}<br>
+                    <strong>Dates:</strong> {{ leave.start_date }} to {{ leave.end_date }}<br>
+                    <strong>Reason:</strong> {{ leave.reason }}
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="admin_notes" class="form-label">Rejection Notes (Optional)</label>
+                        <textarea class="form-control" id="admin_notes" name="admin_notes"
+                                  rows="4" placeholder="Provide reason for rejection..."></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger"
+                                onclick="return confirm('Are you sure you want to reject this leave request?')">
+                            ❌ Reject Leave
+                        </button>
+                        <a href="{% url 'manage_leaves' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

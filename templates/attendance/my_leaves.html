@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}My Leaves - Face Attendance System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>📋 My Leave Requests</h2>
+            <a href="{% url 'submit_leave' %}" class="btn btn-primary">
+                📝 New Leave Request
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                {% if leaves %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Leave Type</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Duration</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Applied On</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for leave in leaves %}
+                            <tr>
+                                <td>
+                                    <span class="badge bg-info">{{ leave.get_leave_type_display }}</span>
+                                </td>
+                                <td>{{ leave.start_date }}</td>
+                                <td>{{ leave.end_date }}</td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ leave.duration }} day(s)</span>
+                                </td>
+                                <td>
+                                    <small>{{ leave.reason|truncatewords:10 }}</small>
+                                </td>
+                                <td>
+                                    {% if leave.status == 'approved' %}
+                                        <span class="badge bg-success">✅ Approved</span>
+                                    {% elif leave.status == 'rejected' %}
+                                        <span class="badge bg-danger">❌ Rejected</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">⏳ Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ leave.applied_on|date:"M d, Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <p class="text-muted">No leave requests found.</p>
+                    <a href="{% url 'submit_leave' %}" class="btn btn-primary">Submit Your First Leave Request</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

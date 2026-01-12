@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Register Face - Face Attendance System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="text-center">📷 Register Face for Employee</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <strong>Instructions:</strong>
+                    <ul>
+                        <li>Upload a clear front-facing photo of the employee</li>
+                        <li>Ensure only one face is visible in the image</li>
+                        <li>Good lighting and no glasses/obstructions recommended</li>
+                    </ul>
+                </div>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="employee_id" class="form-label">Employee ID</label>
+                        <input type="text" class="form-control" id="employee_id" name="employee_id"
+                               placeholder="Enter employee ID" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="face_image" class="form-label">Face Image</label>
+                        <input type="file" class="form-control" id="face_image" name="face_image"
+                               accept="image/*" required>
+                        <div class="form-text">Supported formats: JPG, PNG, JPEG</div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Register Face</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

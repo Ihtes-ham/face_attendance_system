@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Faces - Face Attendance System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-cog me-2"></i>Manage Registered Faces</h1>
+            <a href="{% url 'register_face' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Register New Face
+            </a>
+        </div>
+
+        <!-- Employees with Registered Faces -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-check-circle text-success me-2"></i>
+                    Registered Faces ({{ employees_with_faces.count }})
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if employees_with_faces %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Employee ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Department</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employee in employees_with_faces %}
+                            <tr>
+                                <td>{{ employee.employee_id }}</td>
+                                <td>{{ employee.user.get_full_name }}</td>
+                                <td>{{ employee.user.email }}</td>
+                                <td>{{ employee.department }}</td>
+                                <td>
+                                    <form method="post" action="{% url 'delete_face' employee.employee_id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('Are you sure you want to delete the face data for {{ employee.user.get_full_name }}?')">
+                                            <i class="fas fa-trash me-1"></i>Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No employees with registered faces found.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Employees without Registered Faces -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Pending Registration ({{ employees_without_faces.count }})
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if employees_without_faces %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Employee ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Department</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employee in employees_without_faces %}
+                            <tr>
+                                <td>{{ employee.employee_id }}</td>
+                                <td>{{ employee.user.get_full_name }}</td>
+                                <td>{{ employee.user.email }}</td>
+                                <td>{{ employee.department }}</td>
+                                <td>
+                                    <a href="{% url 'register_face' %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-camera me-1"></i>Register
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">All employees have registered their faces.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Face Recognition Status -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    System Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Face Recognition Status:</strong>
+                            {% if face_recognition_available %}
+                                <span class="badge bg-success">Available</span>
+                            {% else %}
+                                <span class="badge bg-danger">Unavailable</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Total Employees:</strong> {{ employees_with_faces.count|add:employees_without_faces.count }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

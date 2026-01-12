@@ -1,0 +1,405 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Face Attendance System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-tachometer-alt me-2"></i>Attendance Dashboard</h1>
+            <div>
+                <a href="{% url 'mark_attendance' %}" class="btn btn-primary me-2">
+                    <i class="fas fa-fingerprint me-1"></i>Mark Attendance
+                </a>
+                <a href="{% url 'attendance_records' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-history me-1"></i>View Records
+                </a>
+            </div>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="row mb-4">
+            <!-- Total Employees -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Total Employees
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_employees }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-users fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Present Today -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    Present Today
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ present_today }}</div>
+                                <div class="text-xs text-muted">
+                                    {{ present_today|floatformat:0|default:0 }}/{{ total_employees|floatformat:0|default:0 }}
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-user-check fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employees with Faces -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-info shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                    Faces Registered
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ employees_with_faces }}</div>
+                                <div class="progress progress-sm mt-2">
+                                    <div class="progress-bar bg-info" role="progressbar"
+                                         style="width: {% widthratio employees_with_faces total_employees 100 %}%">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-camera fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monthly Attendance -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                    This Month
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ monthly_attendance }}</div>
+                                <div class="text-xs text-muted">Attendance Records</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-calendar-alt fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Recent Attendance -->
+            <div class="col-lg-8 mb-4">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-clock me-2"></i>Today's Attendance
+                            <span class="badge bg-light text-dark ms-2">{{ recent_attendance|length }} records</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_attendance %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Time In</th>
+                                        <th>Time Out</th>
+                                        <th>Status</th>
+                                        <th>Hours</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for record in recent_attendance %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm bg-light rounded me-3">
+                                                    <i class="fas fa-user text-muted p-2"></i>
+                                                </div>
+                                                <div>
+                                                    <strong>{{ record.employee.user.get_full_name }}</strong>
+                                                    <br>
+                                                    <small class="text-muted">{{ record.employee.employee_id }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if record.time_in %}
+                                                <span class="text-success">{{ record.time_in|time:"H:i" }}</span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if record.time_out %}
+                                                <span class="text-danger">{{ record.time_out|time:"H:i" }}</span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if record.status == 'present' %}
+                                                <span class="badge bg-success">Present</span>
+                                            {% elif record.status == 'absent' %}
+                                                <span class="badge bg-danger">Absent</span>
+                                            {% elif record.status == 'late' %}
+                                                <span class="badge bg-warning text-dark">Late</span>
+                                            {% elif record.status == 'half_day' %}
+                                                <span class="badge bg-info">Half Day</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if record.working_hours %}
+                                                <span class="text-primary">{{ record.working_hours }}h</span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-clock fa-3x text-muted mb-3"></i>
+                            <h5>No attendance records for today</h5>
+                            <p class="text-muted">Start by marking attendance for employees.</p>
+                            <a href="{% url 'mark_attendance' %}" class="btn btn-primary">
+                                <i class="fas fa-fingerprint me-1"></i>Mark Attendance
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions & Stats -->
+            <div class="col-lg-4">
+                <!-- Quick Actions -->
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'mark_attendance' %}" class="btn btn-primary btn-block">
+                                <i class="fas fa-fingerprint me-1"></i>Mark Attendance
+                            </a>
+                            <a href="{% url 'attendance_records' %}" class="btn btn-outline-primary btn-block">
+                                <i class="fas fa-history me-1"></i>View All Records
+                            </a>
+                            {% if user.is_staff %}
+                            <!-- Removed manual_attendance link -->
+                            <a href="{% url 'admin:index' %}" class="btn btn-outline-info btn-block">
+                                <i class="fas fa-cog me-1"></i>Admin Panel
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Today's Status Breakdown -->
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-chart-pie me-2"></i>Today's Status</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if today_status %}
+                        <div class="chart-pie">
+                            {% for status in today_status %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>
+                                    {% if status.status == 'present' %}
+                                        <i class="fas fa-circle text-success me-1"></i>Present
+                                    {% elif status.status == 'absent' %}
+                                        <i class="fas fa-circle text-danger me-1"></i>Absent
+                                    {% elif status.status == 'late' %}
+                                        <i class="fas fa-circle text-warning me-1"></i>Late
+                                    {% elif status.status == 'half_day' %}
+                                        <i class="fas fa-circle text-info me-1"></i>Half Day
+                                    {% endif %}
+                                </span>
+                                <span class="badge bg-secondary">{{ status.count }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-chart-pie fa-2x mb-2"></i>
+                            <p>No data available for today</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- System Status -->
+                <div class="card shadow">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="card-title mb-0"><i class="fas fa-cogs me-2"></i>System Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                Face Recognition
+                                <span class="badge {% if face_recognition_available %}bg-success{% else %}bg-danger{% endif %}">
+                                    {% if face_recognition_available %}Active{% else %}Disabled{% endif %}
+                                </span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                Database
+                                <span class="badge bg-success">Connected</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                Last Update
+                                <span class="text-muted small">Just now</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                Current Time
+                                <span class="text-muted small" id="currentTime"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Stats Row -->
+        <div class="row mt-4">
+            <!-- Weekly Overview -->
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-chart-line me-2"></i>This Week's Overview</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-chart-bar fa-3x mb-3"></i>
+                            <p>Weekly analytics chart would be displayed here</p>
+                            <small class="text-muted">Integration with chart libraries like Chart.js</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Events -->
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-calendar-day me-2"></i>Today's Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center">
+                            <h2 class="display-4 text-primary">{{ today|date:"d" }}</h2>
+                            <h5 class="text-muted">{{ today|date:"F Y" }}</h5>
+                            <p class="mt-3">
+                                <i class="fas fa-users text-primary me-2"></i>
+                                <strong>{{ present_today }}</strong> out of <strong>{{ total_employees }}</strong> employees present
+                            </p>
+                            <div class="mt-3">
+                                {% if present_today == total_employees %}
+                                    <span class="badge bg-success">Full Attendance! 🎉</span>
+                                {% elif present_today > total_employees|divisibleby:2 %}
+                                    <span class="badge bg-info">Good Attendance</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Low Attendance</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent =
+                now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // Auto-refresh dashboard every 30 seconds
+        setTimeout(function() {
+            window.location.reload();
+        }, 30000);
+    });
+
+    // Add some animations
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                card.style.transition = 'all 0.5s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    });
+</script>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 10px;
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+    }
+
+    .border-left-primary { border-left: 4px solid #4e73df !important; }
+    .border-left-success { border-left: 4px solid #1cc88a !important; }
+    .border-left-info { border-left: 4px solid #36b9cc !important; }
+    .border-left-warning { border-left: 4px solid #f6c23e !important; }
+
+    .avatar-sm {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .progress {
+        height: 8px;
+    }
+
+    .chart-pie {
+        position: relative;
+        height: auto;
+    }
+</style>
+{% endblock %}

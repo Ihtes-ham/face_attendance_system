@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Leaves - Face Attendance System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>📋 Manage Leave Requests</h2>
+            <div>
+                <a href="?status=pending" class="btn btn-outline-warning btn-sm">Pending</a>
+                <a href="?status=approved" class="btn btn-outline-success btn-sm">Approved</a>
+                <a href="?status=rejected" class="btn btn-outline-danger btn-sm">Rejected</a>
+                <a href="{% url 'manage_leaves' %}" class="btn btn-outline-primary btn-sm">All</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                {% if leaves %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Leave Type</th>
+                                <th>Dates</th>
+                                <th>Duration</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Applied On</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for leave in leaves %}
+                            <tr>
+                                <td>
+                                    <strong>{{ leave.employee.user.get_full_name }}</strong><br>
+                                    <small class="text-muted">{{ leave.employee.employee_id }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ leave.get_leave_type_display }}</span>
+                                </td>
+                                <td>
+                                    {{ leave.start_date }}<br>
+                                    <strong>to</strong><br>
+                                    {{ leave.end_date }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ leave.duration }} day(s)</span>
+                                </td>
+                                <td>
+                                    <small>{{ leave.reason|truncatewords:8 }}</small>
+                                </td>
+                                <td>
+                                    {% if leave.status == 'approved' %}
+                                        <span class="badge bg-success">✅ Approved</span>
+                                    {% elif leave.status == 'rejected' %}
+                                        <span class="badge bg-danger">❌ Rejected</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">⏳ Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ leave.applied_on|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if leave.status == 'pending' %}
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'approve_leave' leave.id %}"
+                                           class="btn btn-success"
+                                           onclick="return confirm('Approve this leave request?')">
+                                            ✅
+                                        </a>
+                                        <a href="{% url 'reject_leave' leave.id %}"
+                                           class="btn btn-danger">
+                                            ❌
+                                        </a>
+                                    </div>
+                                    {% else %}
+                                    <small class="text-muted">Reviewed</small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <p class="text-muted">No leave requests found.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
